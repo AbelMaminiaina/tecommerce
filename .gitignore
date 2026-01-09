@@ -1,0 +1,52 @@
+# Environment variables
+.env
+.env.local
+
+# Third-party addons (to be installed via requirements or git submodules)
+extra-addons/*
+!extra-addons/.gitkeep
+
+# Data directories
+data/
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backups
+*.sql
+*.sql.gz
+*.tar.gz
+*.zip
+*.bak
+*.dump
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+~*

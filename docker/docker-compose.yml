@@ -1,0 +1,225 @@
+version: '3.8'
+
+services:
+  # Development Environment
+  odoo-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: odoo-dev
+    profiles: ["dev"]
+    depends_on:
+      db-dev:
+        condition: service_healthy
+    ports:
+      - "8069:8069"
+      - "8072:8072"
+      - "5678:5678"  # Debugger port
+    volumes:
+      - ../addons:/mnt/custom-addons:rw
+      - ../extra-addons:/mnt/extra-addons:ro
+      - ../config/odoo.dev.conf:/etc/odoo/odoo.conf:ro
+      - ../data/filestore/dev:/var/lib/odoo:rw
+      - ../logs/dev:/var/log/odoo:rw
+    environment:
+      - HOST=db-dev
+      - PORT=5432
+      - USER=odoo
+      - PASSWORD=${POSTGRES_PASSWORD_DEV}
+      - ODOO_RC=/etc/odoo/odoo.conf
+    networks:
+      - odoo-network-dev
+    restart: unless-stopped
+
+  db-dev:
+    image: postgres:15-alpine
+    container_name: odoo-db-dev
+    profiles: ["dev"]
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_DEV}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ../data/postgresql/dev:/var/lib/postgresql/data:rw
+    networks:
+      - odoo-network-dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Test Environment
+  odoo-test:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: odoo-test
+    profiles: ["test"]
+    depends_on:
+      db-test:
+        condition: service_healthy
+    ports:
+      - "8070:8069"
+      - "8073:8072"
+    volumes:
+      - ../addons:/mnt/custom-addons:ro
+      - ../extra-addons:/mnt/extra-addons:ro
+      - ../config/odoo.test.conf:/etc/odoo/odoo.conf:ro
+      - ../data/filestore/test:/var/lib/odoo:rw
+      - ../logs/test:/var/log/odoo:rw
+    environment:
+      - HOST=db-test
+      - PORT=5432
+      - USER=odoo
+      - PASSWORD=${POSTGRES_PASSWORD_TEST}
+      - ODOO_RC=/etc/odoo/odoo.conf
+    networks:
+      - odoo-network-test
+    restart: unless-stopped
+
+  db-test:
+    image: postgres:15-alpine
+    container_name: odoo-db-test
+    profiles: ["test"]
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_TEST}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ../data/postgresql/test:/var/lib/postgresql/data:rw
+    networks:
+      - odoo-network-test
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Pre-production Environment
+  odoo-preprod:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: odoo-preprod
+    profiles: ["preprod"]
+    depends_on:
+      db-preprod:
+        condition: service_healthy
+    ports:
+      - "8071:8069"
+      - "8074:8072"
+    volumes:
+      - ../addons:/mnt/custom-addons:ro
+      - ../extra-addons:/mnt/extra-addons:ro
+      - ../config/odoo.preprod.conf:/etc/odoo/odoo.conf:ro
+      - ../data/filestore/preprod:/var/lib/odoo:rw
+      - ../logs/preprod:/var/log/odoo:rw
+    environment:
+      - HOST=db-preprod
+      - PORT=5432
+      - USER=odoo
+      - PASSWORD=${POSTGRES_PASSWORD_PREPROD}
+      - ODOO_RC=/etc/odoo/odoo.conf
+    networks:
+      - odoo-network-preprod
+    restart: unless-stopped
+
+  db-preprod:
+    image: postgres:15-alpine
+    container_name: odoo-db-preprod
+    profiles: ["preprod"]
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_PREPROD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ../data/postgresql/preprod:/var/lib/postgresql/data:rw
+    networks:
+      - odoo-network-preprod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Production Environment
+  odoo-prod:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: odoo-prod
+    profiles: ["prod"]
+    depends_on:
+      db-prod:
+        condition: service_healthy
+    ports:
+      - "8072:8069"
+      - "8075:8072"
+    volumes:
+      - ../addons:/mnt/custom-addons:ro
+      - ../extra-addons:/mnt/extra-addons:ro
+      - ../config/odoo.prod.conf:/etc/odoo/odoo.conf:ro
+      - odoo-filestore-prod:/var/lib/odoo:rw
+      - ../logs/prod:/var/log/odoo:rw
+    environment:
+      - HOST=db-prod
+      - PORT=5432
+      - USER=odoo
+      - PASSWORD=${POSTGRES_PASSWORD_PROD}
+      - ODOO_RC=/etc/odoo/odoo.conf
+    networks:
+      - odoo-network-prod
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  db-prod:
+    image: postgres:15-alpine
+    container_name: odoo-db-prod
+    profiles: ["prod"]
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_PROD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-prod:/var/lib/postgresql/data:rw
+    networks:
+      - odoo-network-prod
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+networks:
+  odoo-network-dev:
+    driver: bridge
+  odoo-network-test:
+    driver: bridge
+  odoo-network-preprod:
+    driver: bridge
+  odoo-network-prod:
+    driver: bridge
+
+volumes:
+  odoo-filestore-prod:
+    driver: local
+  odoo-db-prod:
+    driver: local
