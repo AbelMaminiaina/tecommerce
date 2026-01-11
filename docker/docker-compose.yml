@@ -16,8 +16,8 @@ services:
       - "8072:8072"
       - "5678:5678"  # Debugger port
     volumes:
-      - ../addons:/mnt/custom-addons:rw
-      - ../extra-addons:/mnt/extra-addons:ro
+      - ../addons:/opt/odoo/custom-addons:rw
+      - ../extra-addons:/opt/odoo/extra-addons:ro
       - ../config/odoo.dev.conf:/etc/odoo/odoo.conf:ro
       - ../data/filestore/dev:/var/lib/odoo:rw
       - ../logs/dev:/var/log/odoo:rw
@@ -27,6 +27,11 @@ services:
       - USER=odoo
       - PASSWORD=${POSTGRES_PASSWORD_DEV}
       - ODOO_RC=/etc/odoo/odoo.conf
+      # Odoo database connection
+      - DB_HOST=db-dev
+      - DB_PORT=5432
+      - DB_USER=odoo
+      - DB_PASSWORD=${POSTGRES_PASSWORD_DEV}
     networks:
       - odoo-network-dev
     restart: unless-stopped
@@ -65,8 +70,8 @@ services:
       - "8070:8069"
       - "8073:8072"
     volumes:
-      - ../addons:/mnt/custom-addons:ro
-      - ../extra-addons:/mnt/extra-addons:ro
+      - ../addons:/opt/odoo/custom-addons:ro
+      - ../extra-addons:/opt/odoo/extra-addons:ro
       - ../config/odoo.test.conf:/etc/odoo/odoo.conf:ro
       - ../data/filestore/test:/var/lib/odoo:rw
       - ../logs/test:/var/log/odoo:rw
@@ -76,6 +81,10 @@ services:
       - USER=odoo
       - PASSWORD=${POSTGRES_PASSWORD_TEST}
       - ODOO_RC=/etc/odoo/odoo.conf
+      - DB_HOST=db-test
+      - DB_PORT=5432
+      - DB_USER=odoo
+      - DB_PASSWORD=${POSTGRES_PASSWORD_TEST}
     networks:
       - odoo-network-test
     restart: unless-stopped
@@ -114,8 +123,8 @@ services:
       - "8071:8069"
       - "8074:8072"
     volumes:
-      - ../addons:/mnt/custom-addons:ro
-      - ../extra-addons:/mnt/extra-addons:ro
+      - ../addons:/opt/odoo/custom-addons:ro
+      - ../extra-addons:/opt/odoo/extra-addons:ro
       - ../config/odoo.preprod.conf:/etc/odoo/odoo.conf:ro
       - ../data/filestore/preprod:/var/lib/odoo:rw
       - ../logs/preprod:/var/log/odoo:rw
@@ -125,6 +134,10 @@ services:
       - USER=odoo
       - PASSWORD=${POSTGRES_PASSWORD_PREPROD}
       - ODOO_RC=/etc/odoo/odoo.conf
+      - DB_HOST=db-preprod
+      - DB_PORT=5432
+      - DB_USER=odoo
+      - DB_PASSWORD=${POSTGRES_PASSWORD_PREPROD}
     networks:
       - odoo-network-preprod
     restart: unless-stopped
@@ -163,8 +176,8 @@ services:
       - "8072:8069"
       - "8075:8072"
     volumes:
-      - ../addons:/mnt/custom-addons:ro
-      - ../extra-addons:/mnt/extra-addons:ro
+      - ../addons:/opt/odoo/custom-addons:ro
+      - ../extra-addons:/opt/odoo/extra-addons:ro
       - ../config/odoo.prod.conf:/etc/odoo/odoo.conf:ro
       - odoo-filestore-prod:/var/lib/odoo:rw
       - ../logs/prod:/var/log/odoo:rw
@@ -174,6 +187,10 @@ services:
       - USER=odoo
       - PASSWORD=${POSTGRES_PASSWORD_PROD}
       - ODOO_RC=/etc/odoo/odoo.conf
+      - DB_HOST=db-prod
+      - DB_PORT=5432
+      - DB_USER=odoo
+      - DB_PASSWORD=${POSTGRES_PASSWORD_PROD}
     networks:
       - odoo-network-prod
     restart: always
