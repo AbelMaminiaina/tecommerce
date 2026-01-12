@@ -2,9 +2,19 @@
 .env
 .env.local
 
+# GitHub tokens and secrets (NEVER commit these!)
+*token*
+*TOKEN*
+.secrets
+secrets/
+
 # Third-party addons (to be installed via requirements or git submodules)
 extra-addons/*
 !extra-addons/.gitkeep
+
+# Enterprise addons (cloned during Docker build)
+enterprise-addons/*
+!enterprise-addons/.gitkeep
 
 # Data directories
 data/
