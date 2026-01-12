@@ -58,6 +58,17 @@ USER odoo
 WORKDIR /opt/odoo
 RUN git clone --depth 1 --branch 18.0 https://github.com/odoo/odoo.git odoo
 
+# Clone Odoo Enterprise 18.0 (requires authentication)
+# To build with Enterprise: docker compose build --build-arg GITHUB_TOKEN=your_token_here
+ARG GITHUB_TOKEN
+RUN if [ -n "$GITHUB_TOKEN" ]; then \
+        git clone --depth 1 --branch 18.0 \
+        https://${GITHUB_TOKEN}@github.com/odoo/enterprise.git enterprise; \
+    else \
+        echo "⚠️  No GITHUB_TOKEN provided - skipping Enterprise addons"; \
+        mkdir -p enterprise; \
+    fi
+
 # Install Python dependencies with fixed versions
 WORKDIR /opt/odoo/odoo
 RUN pip3 install --no-cache-dir --user --break-system-packages \
